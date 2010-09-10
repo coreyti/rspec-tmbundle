@@ -25,6 +25,12 @@ module Spec
         def merb?
           File.exist?(File.join(self, 'config', 'init.rb'))
         end
+
+        # determine whether we have 'app' & 'lib' specs in nested folders.
+        def nested?
+          File.exist?(File.join(self, 'spec', 'app')) &&
+          File.exist?(File.join(self, 'spec', 'lib'))
+        end
       end
       
       def twin(path)
@@ -34,7 +40,10 @@ module Spec
 
           case parent
             when 'lib', 'app' then
-              if framework.rails? || framework.merb?
+              if framework.nested?
+                path = path.gsub(/\/app\//, "/spec/app/")
+                path = path.gsub(/\/lib\//, "/spec/lib/")
+              elsif framework.rails? || framework.merb?
                 path = path.gsub(/\/app\//, "/spec/")
                 path = path.gsub(/\/lib\//, "/spec/lib/")
               else
@@ -51,7 +60,10 @@ module Spec
               path = path.gsub(/\.erb_spec\.rb$/, ".erb")
               path = path.gsub(/\.haml_spec\.rb$/, ".haml")
               path = path.gsub(/_spec\.rb$/, ".rb")
-              if framework.rails? || framework.merb?
+              if framework.nested?
+                path = path.gsub(/\/spec\/lib\//, "/lib/")
+                path = path.gsub(/\/spec\/app\//, "/app/")
+              elsif framework.rails? || framework.merb?
                 path = path.gsub(/\/spec\/lib\//, "/lib/")
                 path = path.gsub(/\/spec\//, "/app/")
               else
